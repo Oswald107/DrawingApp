@@ -144,13 +144,10 @@
     <ClCompile Include="Pen.cpp" />
     <ClCompile Include="Color.cpp" />
     <ClCompile Include="Draw.cpp" />
-    <ClCompile Include="EBO.cpp" />
     <ClCompile Include="Movement.h" />
     <ClCompile Include="Movement.cpp" />
     <ClCompile Include="ShaderClass.cpp" />
     <ClCompile Include="Stats.cpp" />
-    <ClCompile Include="VAO.cpp" />
-    <ClCompile Include="VBO.cpp" />
     <ClCompile Include="Vertex.h" />
   </ItemGroup>
   <ItemGroup>
@@ -162,11 +159,8 @@
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Pen.h" />
     <ClInclude Include="Color.h" />
-    <ClInclude Include="EBO.h" />
     <ClInclude Include="ShaderClass.h" />
     <ClInclude Include="Stats.h" />
-    <ClInclude Include="VAO.h" />
-    <ClInclude Include="VBO.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="TODO.txt" />

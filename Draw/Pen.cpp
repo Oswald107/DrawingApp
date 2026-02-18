@@ -43,3 +43,25 @@ std::vector<Vertex> Pen::createCircle(GLFWwindow* window, Camera camera) {
 	prevMouseY = curMouseY;
 	return v;
 }
+
+void Pen::line(GLFWwindow* window, Camera camera) {
+	double curMouseX, curMouseY;
+	glfwGetCursorPos(window, &curMouseX, &curMouseY);
+	if (prevMouseX != NULL and (prevMouseX != curMouseX or prevMouseY != curMouseY)) {
+		float x1 = camera.Position.x + (prevMouseX - camera.width / 2.0f) / camera.scale;
+		float x2 = camera.Position.x + (curMouseX - camera.width / 2.0f) / camera.scale;
+		float y1 = camera.Position.y - (prevMouseY - camera.height / 2.0f) / camera.scale;
+		float y2 = camera.Position.y - (curMouseY - camera.height / 2.0f) / camera.scale;
+		std::cout << camera.Position.x << " " << camera.Position.y << " " << curMouseX << " " << curMouseY << " " << camera.width << " " << camera.height << " " << x1 << " " << y1 << "\n";
+		
+		float dx = x2 - x1;
+		float dy = y2 - y1;
+		float len = sqrt(dx * dx + dy * dy);
+
+		currentLine.push_back(Vertex { glm::vec2(x2 - dy / len * radius, y2 + dx / len * radius), glm::vec4((*color).red, (*color).green, (*color).blue, (*color).alpha) });
+		currentLine.push_back(Vertex{ glm::vec2(x2 + dy / len * radius, y2 - dx / len * radius), glm::vec4((*color).red, (*color).green, (*color).blue, (*color).alpha) });
+	}
+
+	prevMouseX = curMouseX;
+	prevMouseY = curMouseY;
+}

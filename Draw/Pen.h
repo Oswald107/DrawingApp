@@ -16,10 +16,12 @@ public:
 	float prevMouseY;
 	float radius = 5.0f;
 	Color* color;
+	std::vector<Vertex> currentLine = std::vector<Vertex>{};
 
 	Pen(Color* c);
 	//glm::vec2 screenPositionToWorldPosition(double x, double y, glm::vec3 cameraPosition);
 	std::vector<Vertex> createCircle(GLFWwindow* window, Camera camera);
+	void line(GLFWwindow* window, Camera camera);
 };
 
 

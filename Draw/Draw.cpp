@@ -9,17 +9,14 @@ namespace fs = std::filesystem;
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-
-#include"shaderClass.h"
-//#include"VAO.h"
-//#include"VBO.h"
-//#include"EBO.h"
-#include"Vertex.h"
-#include"Callbacks.h"
 #include"imgui/imgui.h"
 #include"imgui/imconfig.h"
 #include"imgui/imgui_impl_glfw.h"
 #include"imgui/imgui_impl_opengl3.h"
+
+#include"ShaderClass.h"
+#include"Vertex.h"
+#include"Callbacks.h"
 #include"Stats.h"
 #include"Color.h"
 #include"Camera.h"
@@ -142,6 +139,7 @@ int main()
 	Color color;
 	float radius = 5;
 	std::vector<std::vector<Vertex>> circles;
+	std::vector<std::vector<Vertex>> lines;
 	double prevMouseX, prevMouseY, curMouseX, curMouseY;
 	glfwGetCursorPos(window, &prevMouseX, &prevMouseY);
 	curMouseX = prevMouseX;
@@ -149,6 +147,7 @@ int main()
 	Camera camera(width, height, glm::vec3(0.0f, 0.0f, 1.0f));
 	float scale = 1.0f;
 	Pen pen(&color);
+	bool held = false;
 
 
 	int profile;
@@ -162,6 +161,7 @@ int main()
 	// MAIN LOOP
 	while (!glfwWindowShouldClose(window))
 	{
+		held = true;
 		// update dimensions
 		int width, height;
 		glfwGetFramebufferSize(window, &width, &height);
@@ -181,9 +181,16 @@ int main()
 		    // Hides mouse cursor
 		    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 
-			circles.push_back(pen.createCircle(window, camera));
+			//circles.push_back(pen.createCircle(window, camera));
+
+			pen.line(window, camera);
 		}
 		else {
+			if (held) {
+				held = false;
+				lines.push_back(pen.currentLine);
+				pen.currentLine = std::vector<Vertex>{};
+			}
 			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 			pen.prevMouseX = NULL;
 			pen.prevMouseY = NULL;
@@ -210,6 +217,16 @@ int main()
 			glBindBuffer(GL_ARRAY_BUFFER, VBO1);
 			glBufferData(GL_ARRAY_BUFFER, circle.size() * sizeof(Vertex), circle.data(), GL_DYNAMIC_DRAW);
 			glDrawArrays(GL_TRIANGLE_FAN, 0, circle.size());
+		}
+
+		glBindBuffer(GL_ARRAY_BUFFER, VBO1);
+		glBufferData(GL_ARRAY_BUFFER, pen.currentLine.size() * sizeof(Vertex), pen.currentLine.data(), GL_DYNAMIC_DRAW);
+		glDrawArrays(GL_TRIANGLE_STRIP, 0, pen.currentLine.size());
+
+		for (std::vector<Vertex> line : lines) {
+			glBindBuffer(GL_ARRAY_BUFFER, VBO1);
+			glBufferData(GL_ARRAY_BUFFER, line.size() * sizeof(Vertex), line.data(), GL_DYNAMIC_DRAW);
+			glDrawArrays(GL_TRIANGLE_STRIP, 0, line.size());
 		}
 
 		ImGui_ImplOpenGL3_NewFrame();
