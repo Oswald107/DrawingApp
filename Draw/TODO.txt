@@ -1,0 +1,18 @@
+connected line
+color pick
+size
+not stretched - had to relearn a bit of linear algebra for this, it wasn't difficult I was just stubborn. Also I was stuck since I was using the wrong function
+zoom
+
+save
+open
+rgb adjust hsv
+alternative pen, draws 2 triangles between points instead of filling with circles
+make cursor circle
+make circle not produce extras when held?
+
+layers - each layer is an object with its own local space, higher layers are closer to the camera
+
+eraser
+color picker
+mouse movement
