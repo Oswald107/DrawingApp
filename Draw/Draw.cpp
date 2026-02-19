@@ -140,6 +140,7 @@ int main()
 	float radius = 5;
 	std::vector<std::vector<Vertex>> circles;
 	std::vector<std::vector<Vertex>> lines;
+	std::vector<std::vector<Vertex>> redo;
 	double prevMouseX, prevMouseY, curMouseX, curMouseY;
 	glfwGetCursorPos(window, &prevMouseX, &prevMouseY);
 	curMouseX = prevMouseX;
@@ -161,7 +162,6 @@ int main()
 	// MAIN LOOP
 	while (!glfwWindowShouldClose(window))
 	{
-		held = true;
 		// update dimensions
 		int width, height;
 		glfwGetFramebufferSize(window, &width, &height);
@@ -178,6 +178,7 @@ int main()
 		// MAKE CIRCLES ON CLICK
 		if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
 		{
+			held = true;
 		    // Hides mouse cursor
 		    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 
@@ -194,6 +195,20 @@ int main()
 			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 			pen.prevMouseX = NULL;
 			pen.prevMouseY = NULL;
+		}
+
+		// undo
+		if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS and lines.size() > 0)
+		{
+			redo.push_back(lines.back());
+			lines.pop_back();
+		}
+
+		// redo
+		if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS and redo.size() > 0)
+		{
+			lines.push_back(redo.back());
+			redo.pop_back();
 		}
 
 
@@ -219,15 +234,15 @@ int main()
 			glDrawArrays(GL_TRIANGLE_FAN, 0, circle.size());
 		}
 
-		glBindBuffer(GL_ARRAY_BUFFER, VBO1);
-		glBufferData(GL_ARRAY_BUFFER, pen.currentLine.size() * sizeof(Vertex), pen.currentLine.data(), GL_DYNAMIC_DRAW);
-		glDrawArrays(GL_TRIANGLE_STRIP, 0, pen.currentLine.size());
-
 		for (std::vector<Vertex> line : lines) {
 			glBindBuffer(GL_ARRAY_BUFFER, VBO1);
 			glBufferData(GL_ARRAY_BUFFER, line.size() * sizeof(Vertex), line.data(), GL_DYNAMIC_DRAW);
 			glDrawArrays(GL_TRIANGLE_STRIP, 0, line.size());
 		}
+
+		glBindBuffer(GL_ARRAY_BUFFER, VBO1);
+		glBufferData(GL_ARRAY_BUFFER, pen.currentLine.size() * sizeof(Vertex), pen.currentLine.data(), GL_DYNAMIC_DRAW);
+		glDrawArrays(GL_TRIANGLE_STRIP, 0, pen.currentLine.size());
 
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
@@ -256,10 +271,10 @@ int main()
 		if (ImGui::SliderFloat("Value", &color.value, 0.0f, 100.0f, "Value = %.1f")) {
 			color.recalculateValue();
 		}
-		if (ImGui::SliderFloat("Saturation", &color.saturation, 0.0f, 100.0f, "Saturation = %.1f")) {
+		if (ImGui::SliderFloat("Saturation", &color.saturation, 0.0f, 100.0f, "Saturationn = %.1f")) {
 			color.recalculateSaturation();
 		}
-		if (ImGui::SliderFloat("Scale", &scale, 1.0f, 10.0f, "Scale = %.1f")) {
+		if (ImGui::SliderFloat("Scale", &camera.scale, 1.0f, 10.0f, "Scale = %.1f")) {
 			camera.update();
 		}
 
