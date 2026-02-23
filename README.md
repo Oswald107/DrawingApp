@@ -1,6 +1,8 @@
 # Drawing App
 
-A lightweight drawing application built in C++ using modern OpenGL.
+A lightweight drawing application built in C++ using OpenGL. 
+
+I took an interest in graphics programming in college but I had to shelve it when other topics took priority. Now that I have some spare time, I'm trying to learn by building up features that I've seen on other drawing apps. I'm having fun encountering potential pitfalls and thinking of ways to get around those issues. 
 
 ---
 
@@ -10,7 +12,6 @@ A lightweight drawing application built in C++ using modern OpenGL.
 - GLM – Mathematics (matrices, vectors, transformations)
 - Dear ImGui – Graphical user interface
 - GLEW – OpenGL extension management
-- stb_image – Image loading
 
 ---
 
