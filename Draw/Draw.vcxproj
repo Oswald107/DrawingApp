@@ -148,6 +148,7 @@
     <ClCompile Include="ShaderClass.cpp" />
     <ClCompile Include="Stats.cpp" />
     <ClCompile Include="LineStroke.cpp" />
+    <ClCompile Include="stb_image_write.h" />
     <ClCompile Include="Vertex.h" />
   </ItemGroup>
   <ItemGroup>
@@ -161,6 +162,7 @@
     <ClInclude Include="Color.h" />
     <ClInclude Include="ShaderClass.h" />
     <ClInclude Include="Stats.h" />
+    <ClInclude Include="stb_image.h" />
     <ClInclude Include="Stroke.h" />
   </ItemGroup>
   <ItemGroup>

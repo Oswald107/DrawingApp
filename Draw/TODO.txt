@@ -6,9 +6,10 @@ zoom
 alternative pen, draws 2 triangles between points instead of filling with circles
 undo
 redo
-
-
 save
+
+
+better save
 open
 rgb adjust hsv
 make cursor circle

@@ -65,3 +65,42 @@ void Pen::line(GLFWwindow* window, Camera camera) {
 	prevMouseX = curMouseX;
 	prevMouseY = curMouseY;
 }
+
+void Pen::Inputs(GLFWwindow* window, Camera camera) {
+	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
+	{
+		held = true;
+		// Hides mouse cursor
+		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+		//circles.push_back(pen.createCircle(window, camera));
+		line(window, camera);
+	}
+	else if (glfwGetKey(window, GLFW_KEY_N) == GLFW_PRESS) {
+		held = true;
+		erase.push_back(createCircle(window, camera));
+	}
+	else {
+		if (held) {
+			held = false;
+			lines.push_back(currentLine);
+			currentLine = std::vector<Vertex>{};
+		}
+		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+		prevMouseX = NULL;
+		prevMouseY = NULL;
+	}
+
+	// UNDO
+	if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS and lines.size() > 0)
+	{
+		redo.push_back(lines.back());
+		lines.pop_back();
+	}
+
+	// REDO
+	if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS and redo.size() > 0)
+	{
+		lines.push_back(redo.back());
+		redo.pop_back();
+	}
+}

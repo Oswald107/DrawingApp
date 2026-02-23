@@ -21,11 +21,76 @@ namespace fs = std::filesystem;
 #include"Color.h"
 #include"Camera.h"
 #include"Pen.h"
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include"stb_image_write.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 
 const unsigned int width = 800;
 const unsigned int height = 800;
+
+void im(Color* color, Pen* pen, Camera* camera) {
+	ImGui_ImplOpenGL3_NewFrame();
+	ImGui_ImplGlfw_NewFrame();
+	ImGui::NewFrame();
+	ImGui::Begin("Hello");
+	if (ImGui::SliderFloat("R", &(*color).red, 0.0f, 1.0f, "Value = %.2f")) {
+
+	}
+	if (ImGui::SliderFloat("G", &(*color).green, 0.0f, 1.0f, "Value = %.2f")) {
+
+	}
+	if (ImGui::SliderFloat("B", &(*color).blue, 0.0f, 1.0f, "Value = %.2f")) {
+
+	}
+	if (ImGui::SliderFloat("Opacity", &(*color).alpha, 0.0f, 1.0f, "Value = %.1f")) {
+
+	}
+	if (ImGui::SliderFloat("Size", &(*pen).radius, 0.0f, 100.0f, "Value = %.2f")) {
+
+	}
+	if (ImGui::SliderFloat("Hue", &(*color).hue, 0.0f, 100.0f, "Hue = %.1f")) {
+		(*color).recalculateHue();
+	}
+	if (ImGui::SliderFloat("Value", &(*color).value, 0.0f, 100.0f, "Value = %.1f")) {
+		(*color).recalculateValue();
+	}
+	if (ImGui::SliderFloat("Saturation", &(*color).saturation, 0.0f, 100.0f, "Saturationn = %.1f")) {
+		(*color).recalculateSaturation();
+	}
+	if (ImGui::SliderFloat("Scale", &(*camera).scale, 1.0f, 10.0f, "Scale = %.1f")) {
+		(*camera).update();
+	}
+	ImGui::Text("ImGui is working!");
+	ImGui::End();
+	ImGui::Render();
+	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+}
+
+void save(GLFWwindow* window) {
+	if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS)
+	{
+		std::vector<unsigned char> pixels(width * height * 3);
+
+		// Read pixels from OpenGL framebuffer
+		glPixelStorei(GL_PACK_ALIGNMENT, 1);
+		glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, pixels.data());
+
+		// Flip vertically (OpenGL's origin is bottom-left)
+		std::vector<unsigned char> flipped(width * height * 3);
+		for (int y = 0; y < height; ++y)
+		{
+			memcpy(
+				&flipped[y * width * 3],
+				&pixels[(height - 1 - y) * width * 3],
+				width * 3
+			);
+		}
+
+		// Write PNG
+		stbi_write_png("output.png", width, height, 3, flipped.data(), width * 3);
+	}
+}
 
 int main()
 {
@@ -93,6 +158,30 @@ int main()
 	glBindVertexArray(0);
 
 
+	// FBO
+	GLuint FBO;
+	glGenFramebuffers(1, &FBO);
+	glBindFramebuffer(GL_FRAMEBUFFER, FBO);
+
+	GLuint colorTex;
+	glGenTextures(1, &colorTex);
+	glBindTexture(GL_TEXTURE_2D, colorTex);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	// Attach texture as color attachment
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorTex, 0);
+
+	// Check completeness
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+	{
+		std::cout << "FBO not complete!\n";
+	}
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+
 	// METRICS
 	Stats stats;
 
@@ -131,8 +220,9 @@ int main()
 
 
 	// ALPHA BLENDING
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	
 
 
 	// ETC
@@ -141,6 +231,7 @@ int main()
 	std::vector<std::vector<Vertex>> circles;
 	std::vector<std::vector<Vertex>> lines;
 	std::vector<std::vector<Vertex>> redo;
+	std::vector<std::vector<Vertex>> erase;
 	double prevMouseX, prevMouseY, curMouseX, curMouseY;
 	glfwGetCursorPos(window, &prevMouseX, &prevMouseY);
 	curMouseX = prevMouseX;
@@ -149,6 +240,7 @@ int main()
 	float scale = 1.0f;
 	Pen pen(&color);
 	bool held = false;
+	bool held2 = false;
 
 
 	int profile;
@@ -158,11 +250,11 @@ int main()
 		std::cout << "Core profile\n";
 	if (profile & GL_CONTEXT_COMPATIBILITY_PROFILE_BIT)
 		std::cout << "Compatibility profile\n";
-
+	
 	// MAIN LOOP
 	while (!glfwWindowShouldClose(window))
 	{
-		// update dimensions
+		// UPDATE DIMENSIONS
 		int width, height;
 		glfwGetFramebufferSize(window, &width, &height);
 		if (camera.width != width and camera.height != height)
@@ -171,46 +263,13 @@ int main()
 			camera.height = height;
 			camera.update();
 		}
-
 		// METRICS
 		stats.showStats(window);
+		// PEN INPUTS
+		pen.Inputs(window, camera);
 
-		// MAKE CIRCLES ON CLICK
-		if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
-		{
-			held = true;
-		    // Hides mouse cursor
-		    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
-
-			//circles.push_back(pen.createCircle(window, camera));
-
-			pen.line(window, camera);
-		}
-		else {
-			if (held) {
-				held = false;
-				lines.push_back(pen.currentLine);
-				pen.currentLine = std::vector<Vertex>{};
-			}
-			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-			pen.prevMouseX = NULL;
-			pen.prevMouseY = NULL;
-		}
-
-		// undo
-		if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS and lines.size() > 0)
-		{
-			redo.push_back(lines.back());
-			lines.pop_back();
-		}
-
-		// redo
-		if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS and redo.size() > 0)
-		{
-			lines.push_back(redo.back());
-			redo.pop_back();
-		}
-
+		//FBO
+		//glBindFramebuffer(GL_FRAMEBUFFER, FBO);
 
 		// Specify the color of the background
 		glClearColor(0.07f, 0.13f, 0.17f, 1.0f);
@@ -228,65 +287,63 @@ int main()
 		// Updates and exports the camera matrix to the Vertex Shader
 		camera.Matrix(shaderProgram, "camMatrix");
 
-		for (std::vector<Vertex> circle : circles) {
+
+		//glEnable(GL_BLEND);
+		// DRAW
+		for (std::vector<Vertex> circle : pen.circles) {
 			glBindBuffer(GL_ARRAY_BUFFER, VBO1);
 			glBufferData(GL_ARRAY_BUFFER, circle.size() * sizeof(Vertex), circle.data(), GL_DYNAMIC_DRAW);
 			glDrawArrays(GL_TRIANGLE_FAN, 0, circle.size());
 		}
 
-		for (std::vector<Vertex> line : lines) {
+		for (std::vector<Vertex> line : pen.lines) {
 			glBindBuffer(GL_ARRAY_BUFFER, VBO1);
 			glBufferData(GL_ARRAY_BUFFER, line.size() * sizeof(Vertex), line.data(), GL_DYNAMIC_DRAW);
 			glDrawArrays(GL_TRIANGLE_STRIP, 0, line.size());
 		}
 
+		std::cout << pen.erase.size() << "\n";
+
+		//glDisable(GL_BLEND);
+		for (std::vector<Vertex> e : pen.erase) {
+			glBindBuffer(GL_ARRAY_BUFFER, VBO1);
+			glBufferData(GL_ARRAY_BUFFER, e.size() * sizeof(Vertex), e.data(), GL_DYNAMIC_DRAW);
+			glDrawArrays(GL_TRIANGLE_FAN, 0, e.size());
+		}
+
+		//glEnable(GL_BLEND);
 		glBindBuffer(GL_ARRAY_BUFFER, VBO1);
 		glBufferData(GL_ARRAY_BUFFER, pen.currentLine.size() * sizeof(Vertex), pen.currentLine.data(), GL_DYNAMIC_DRAW);
 		glDrawArrays(GL_TRIANGLE_STRIP, 0, pen.currentLine.size());
 
-		ImGui_ImplOpenGL3_NewFrame();
-		ImGui_ImplGlfw_NewFrame();
-		ImGui::NewFrame();
 
-		ImGui::Begin("Hello");
+		
+		// SAVE FUNCTION
+		save(window);
 
-		if (ImGui::SliderFloat("R", &color.red, 0.0f, 1.0f, "Value = %.2f")) {
-			
-		}
-		if (ImGui::SliderFloat("G", &color.green, 0.0f, 1.0f, "Value = %.2f")) {
+		// Done drawing to texture
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-		}
-		if (ImGui::SliderFloat("B", &color.blue, 0.0f, 1.0f, "Value = %.2f")) {
-
-		}
-		if (ImGui::SliderFloat("Opacity", &color.alpha, 0.0f, 1.0f, "Value = %.1f")) {
-
-		}
-		if (ImGui::SliderFloat("Size", &pen.radius, 0.0f, 100.0f, "Value = %.2f")) {
-
-		}
-		if (ImGui::SliderFloat("Hue", &color.hue, 0.0f, 100.0f, "Hue = %.1f")) {
-			color.recalculateHue();
-		}
-		if (ImGui::SliderFloat("Value", &color.value, 0.0f, 100.0f, "Value = %.1f")) {
-			color.recalculateValue();
-		}
-		if (ImGui::SliderFloat("Saturation", &color.saturation, 0.0f, 100.0f, "Saturationn = %.1f")) {
-			color.recalculateSaturation();
-		}
-		if (ImGui::SliderFloat("Scale", &camera.scale, 1.0f, 10.0f, "Scale = %.1f")) {
-			camera.update();
-		}
-
-
-		ImGui::Text("ImGui is working!");
-		ImGui::End();
-
-		ImGui::Render();
-		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+		// IMGUI SLIDERS
+		im(&color, &pen, &camera);
 
 		// Swap the back buffer with the front buffer
 		glfwSwapBuffers(window);
+
+		// If erasing:
+		//glDisable(GL_BLEND);
+		/*setShaderColor(bgR, bgG, bgB, 1.0f);
+		drawEraseCircle();*/
+
+
+
+		glClear(GL_COLOR_BUFFER_BIT);
+
+		glBindTexture(GL_TEXTURE_2D, colorTex);
+		/*drawFullscreenQuad();*/
+
+
+
 		// Take care of all GLFW events
 		glfwPollEvents();
 	}
@@ -300,6 +357,7 @@ int main()
 	glDeleteVertexArrays(1, &VAO1);
 	glDeleteBuffers(1, &VBO1);
 	shaderProgram.Delete();
+	glDeleteFramebuffers(1, &FBO);
 	// Delete window before ending the program
 	glfwDestroyWindow(window);
 	// Terminate GLFW before ending the program
@@ -311,3 +369,4 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
 	glViewport(0, 0, width, height);
 }
+
