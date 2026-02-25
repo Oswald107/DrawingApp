@@ -21,19 +21,7 @@ void Camera::updateDimensions(int w, int h, float s) {
 	height = h;
 	scale = s;
 
-	// Initializes matrices since otherwise they will be the null matrix
-	glm::mat4 view = glm::mat4(1.0f);
-	glm::mat4 projection = glm::mat4(1.0f);
-
-	// Makes camera look in the right direction from the right position
-	view = glm::lookAt(Position, Position + Orientation, Up);
-	// Sets transformation between screen with bounds 2x2 (in the range -1 to 1) and the drawing space (I set it to follow the resolution so like 1920 X 1080 at fullscreen from range -960 to 960 ...) 
-	projection[0][0] = scale * 2.0f / width;
-	projection[1][1] = scale * 2.0f / height;
-	projection[2][2] = -1.0f;
-	projection[3][3] = 1.0f;
-
-	cameraMatrix = projection * view;
+	update();
 }
 
 void Camera::update() {
@@ -44,11 +32,21 @@ void Camera::update() {
 	// Makes camera look in the right direction from the right position
 	view = glm::lookAt(Position, Position + Orientation, Up);
 	// Sets transformation between screen with bounds 2x2 (in the range -1 to 1) and the drawing space (I set it to follow the resolution so like 1920 X 1080 at fullscreen from range -960 to 960 ...) 
-	projection[0][0] = scale * 2.0f / width;
-	projection[1][1] = scale * 2.0f / height;
-	projection[2][2] = -1.0f;
-	projection[3][3] = 1.0f;
+	//projection[0][0] = scale * 2.0f / width;
+	//projection[1][1] = scale * 2.0f / height;
+	//projection[2][2] = -1.0f;
+	//projection[3][3] = 1.0f;
+	//projection[3][0] = -1.0f;  // translate X
+	//projection[3][1] = -1.0f;  // translate Y
 
+	//projection = glm::ortho(0.0f, 800.0f, 0.0f, 800.0f);
+	std::cout << glm::to_string(projection) << std::endl;
+	projection = glm::ortho(
+		-800 / 2.0f, 800 / 2.0f,
+		-800 / 2.0f, 800 / 2.0f,
+		-1.0f, 1.0f
+	);
+	std::cout << glm::to_string(projection) << std::endl;
 	cameraMatrix = projection * view;
 }
 

@@ -154,6 +154,8 @@
   <ItemGroup>
     <None Include="default.frag" />
     <None Include="default.vert" />
+    <None Include="frame.frag" />
+    <None Include="frame.vert" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Callbacks.h" />

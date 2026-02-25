@@ -28,6 +28,35 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 
 const unsigned int width = 800;
 const unsigned int height = 800;
+const unsigned int drawingSpaceWidth = 1200;
+const unsigned int drawingSpaceHeight = 900;
+float x = 800.0f;
+
+//float rectangleVertices[] =
+//{
+//	// Coords        // TexCoords
+//	 400.0f, -400.0f,  800.0f, 0.0f,
+//	-400.0f, -400.0f,  0.0f, 0.0f,
+//	-400.0f,  400.0f,  0.0f, 800.0f,
+//
+//	 400.0f,  400.0f,  800.0f, 800.0f,
+//	 400.0f, -400.0f,  800.0f, 0.0f,
+//	-400.0f,  400.0f,  0.0f, 800.0f
+//};
+
+float rectangleVertices[] =
+{
+	// Coords        // TexCoords
+	 1.0f, -1.0f,  1.0f, 0.0f,
+	-1.0f, -1.0f,  0.0f, 0.0f,
+	-1.0f,  1.0f,  0.0f, 1.0f,
+
+	 1.0f, 1.0f,  1.0f, 1.0f,
+	 1.0f, -1.0f,  1.0f, 0.0f,
+	-1.0f,  1.0f,  0.0f, 1.0f
+};
+
+
 
 void im(Color* color, Pen* pen, Camera* camera) {
 	ImGui_ImplOpenGL3_NewFrame();
@@ -46,7 +75,7 @@ void im(Color* color, Pen* pen, Camera* camera) {
 	if (ImGui::SliderFloat("Opacity", &(*color).alpha, 0.0f, 1.0f, "Value = %.1f")) {
 
 	}
-	if (ImGui::SliderFloat("Size", &(*pen).radius, 0.0f, 100.0f, "Value = %.2f")) {
+	if (ImGui::SliderFloat("Size", &(*pen).radius, 0.0f, 10000.0f, "Value = %.2f")) {
 
 	}
 	if (ImGui::SliderFloat("Hue", &(*color).hue, 0.0f, 100.0f, "Hue = %.1f")) {
@@ -133,10 +162,6 @@ int main()
 	glfwSetCursorPosCallback(window, cursor_position_callback);
 	
 
-	// SHADER
-	Shader shaderProgram("default.vert", "default.frag");
-	shaderProgram.Activate();
-
 
 	// VAO, VBO SETUP
 	// Create reference containers for the Vartex Array Object and the Vertex Buffer Object
@@ -156,30 +181,6 @@ int main()
 	// Bind both the VBO and VAO to 0 so that we don't accidentally modify the VAO and VBO we created
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
-
-
-	// FBO
-	GLuint FBO;
-	glGenFramebuffers(1, &FBO);
-	glBindFramebuffer(GL_FRAMEBUFFER, FBO);
-
-	GLuint colorTex;
-	glGenTextures(1, &colorTex);
-	glBindTexture(GL_TEXTURE_2D, colorTex);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	// Attach texture as color attachment
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorTex, 0);
-
-	// Check completeness
-	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-	{
-		std::cout << "FBO not complete!\n";
-	}
-
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 
 	// METRICS
@@ -222,38 +223,84 @@ int main()
 	// ALPHA BLENDING
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	
 
 
 	// ETC
 	Color color;
-	float radius = 5;
-	std::vector<std::vector<Vertex>> circles;
-	std::vector<std::vector<Vertex>> lines;
-	std::vector<std::vector<Vertex>> redo;
-	std::vector<std::vector<Vertex>> erase;
-	double prevMouseX, prevMouseY, curMouseX, curMouseY;
-	glfwGetCursorPos(window, &prevMouseX, &prevMouseY);
-	curMouseX = prevMouseX;
-	curMouseY = prevMouseY;
 	Camera camera(width, height, glm::vec3(0.0f, 0.0f, 1.0f));
 	float scale = 1.0f;
 	Pen pen(&color);
-	bool held = false;
-	bool held2 = false;
+	
+	// FBO
+	GLuint FBO;
+	glGenFramebuffers(1, &FBO);
+	glBindFramebuffer(GL_FRAMEBUFFER, FBO);
 
+	unsigned int colorTex;
+	glGenTextures(1, &colorTex);
+	glBindTexture(GL_TEXTURE_2D, colorTex);
 
-	int profile;
-	glGetIntegerv(GL_CONTEXT_PROFILE_MASK, &profile);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 800, 800, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
 
-	if (profile & GL_CONTEXT_CORE_PROFILE_BIT)
-		std::cout << "Core profile\n";
-	if (profile & GL_CONTEXT_COMPATIBILITY_PROFILE_BIT)
-		std::cout << "Compatibility profile\n";
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	GLuint rbo;
+	glGenRenderbuffers(1, &rbo);
+	glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
+	glBindRenderbuffer(GL_RENDERBUFFER, 0);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
+
+	// Attach texture as color attachment
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorTex, 0);
+
+	// Check completeness
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+	{
+		std::cout << "FBO not complete!\n";
+	}
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	// Prepare framebuffer rectangle VBO and VAO
+	unsigned int rectVAO, rectVBO;
+	glGenVertexArrays(1, &rectVAO);
+	glGenBuffers(1, &rectVBO);
+	glBindVertexArray(rectVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, rectVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(rectangleVertices), &rectangleVertices, GL_STATIC_DRAW);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+
+	// SHADER
+	Shader shaderProgram("default.vert", "default.frag");
+	shaderProgram.Activate();
+	//shaderProgram.Recompile("default.vert", "default.frag");
+	Shader framebufferProgram("frame.vert", "frame.frag");
+	framebufferProgram.Activate();
+	glUniform1i(glGetUniformLocation(framebufferProgram.ID, "screenTexture"), 0);
 	
 	// MAIN LOOP
 	while (!glfwWindowShouldClose(window))
 	{
+
+		//FBO
+		glBindFramebuffer(GL_FRAMEBUFFER, FBO);
+		glViewport(0, 0, 800, 800);
+
+		// Specify the color of the background
+		glClearColor(0.07f, 0.13f, 0.17f, 1.0f);
+		// Clean the back buffer and assign the new color to it
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		//glEnable(GL_DEPTH_TEST);
+
+
+		// Tell OpenGL which Shader Program we want to use
+		shaderProgram.Activate();
 		// UPDATE DIMENSIONS
 		int width, height;
 		glfwGetFramebufferSize(window, &width, &height);
@@ -268,17 +315,6 @@ int main()
 		// PEN INPUTS
 		pen.Inputs(window, camera);
 
-		//FBO
-		//glBindFramebuffer(GL_FRAMEBUFFER, FBO);
-
-		// Specify the color of the background
-		glClearColor(0.07f, 0.13f, 0.17f, 1.0f);
-		// Clean the back buffer and assign the new color to it
-		glClear(GL_COLOR_BUFFER_BIT);
-
-		// Tell OpenGL which Shader Program we want to use
-		shaderProgram.Recompile("default.vert", "default.frag");
-		shaderProgram.Activate();
 		// Bind the VAO so OpenGL knows to use it
 		glBindVertexArray(VAO1);
 		
@@ -302,7 +338,7 @@ int main()
 			glDrawArrays(GL_TRIANGLE_STRIP, 0, line.size());
 		}
 
-		std::cout << pen.erase.size() << "\n";
+		//std::cout << pen.lines.size() << "\n";
 
 		//glDisable(GL_BLEND);
 		for (std::vector<Vertex> e : pen.erase) {
@@ -321,14 +357,6 @@ int main()
 		// SAVE FUNCTION
 		save(window);
 
-		// Done drawing to texture
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-		// IMGUI SLIDERS
-		im(&color, &pen, &camera);
-
-		// Swap the back buffer with the front buffer
-		glfwSwapBuffers(window);
 
 		// If erasing:
 		//glDisable(GL_BLEND);
@@ -336,14 +364,28 @@ int main()
 		drawEraseCircle();*/
 
 
+		// Bind the default framebuffer
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glViewport(0, 0, 800, 800);
 
-		glClear(GL_COLOR_BUFFER_BIT);
+		//glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+		// Draw the framebuffer rectangle
+		framebufferProgram.Activate();
+		glBindVertexArray(rectVAO);
+		glDisable(GL_DEPTH_TEST); // prevents framebuffer rectangle from being discarded
 		glBindTexture(GL_TEXTURE_2D, colorTex);
-		/*drawFullscreenQuad();*/
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+		//if (glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE)
+		//	// execute victory dance
+		//	std::cout << "HELLO" << "\n";
+		
+		// IMGUI SLIDERS
+		im(&color, &pen, &camera);
 
-
-
+		// Swap the back buffer with the front buffer
+		glfwSwapBuffers(window);
 		// Take care of all GLFW events
 		glfwPollEvents();
 	}

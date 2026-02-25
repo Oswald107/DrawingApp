@@ -1,5 +1,5 @@
 #include"Pen.h"
-
+#include "glm/gtx/string_cast.hpp"
 
 Pen::Pen(Color* c) {
 	prevMouseX = NULL;
@@ -22,7 +22,10 @@ std::vector<Vertex> Pen::createCircle(GLFWwindow* window, Camera camera) {
 		float x2 = camera.Position.x + (curMouseX - camera.width / 2.0f) / camera.scale;
 		float y1 = camera.Position.y - (prevMouseY - camera.height / 2.0f) / camera.scale;
 		float y2 = camera.Position.y - (curMouseY - camera.height / 2.0f) / camera.scale;
-		std::cout << camera.Position.x << " " << camera.Position.y << " " << curMouseX << " " << curMouseY << " " << camera.width << " " << camera.height << " " << x1 << " " << y1 << "\n";
+
+		//std::cout << camera.Position.x << " " << camera.Position.y << " " << curMouseX << " " << curMouseY << " " << camera.width << " " << camera.height << " " << x2 << " " << y2 << "\n";
+		std::cout << curMouseX << " " << x2 << "\n";
+		
 		int circlesNeeded = std::max(static_cast<int>(sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1)) / radius), 1);
 
 		for (int c = 0; c < circlesNeeded; c++) {
@@ -44,6 +47,10 @@ std::vector<Vertex> Pen::createCircle(GLFWwindow* window, Camera camera) {
 	return v;
 }
 
+void testMatrix(Camera camera, float x, float y) {
+	std::cout << glm::to_string(camera.cameraMatrix * glm::vec4(x, y, 0.0f, 0.0f)) << "\n";
+}
+
 void Pen::line(GLFWwindow* window, Camera camera) {
 	double curMouseX, curMouseY;
 	glfwGetCursorPos(window, &curMouseX, &curMouseY);
@@ -52,8 +59,15 @@ void Pen::line(GLFWwindow* window, Camera camera) {
 		float x2 = camera.Position.x + (curMouseX - camera.width / 2.0f) / camera.scale;
 		float y1 = camera.Position.y - (prevMouseY - camera.height / 2.0f) / camera.scale;
 		float y2 = camera.Position.y - (curMouseY - camera.height / 2.0f) / camera.scale;
-		std::cout << camera.Position.x << " " << camera.Position.y << " " << curMouseX << " " << curMouseY << " " << camera.width << " " << camera.height << " " << x1 << " " << y1 << "\n";
-		
+
+		/*float x1 = prevMouseX - 400;
+		float x2 = curMouseX - 400;
+		float y1 = 400 - prevMouseY;
+		float y2 = 400 - curMouseY;*/
+		//std::cout << camera.Position.x << " " << camera.Position.y << " " << curMouseX << " " << curMouseY << " " << camera.width << " " << camera.height << " " << x1 << " " << y1 << "\n";
+		//std::cout << x2 << " " << y2 << "\n";
+		testMatrix(camera, x2, y2);
+
 		float dx = x2 - x1;
 		float dy = y2 - y1;
 		float len = sqrt(dx * dx + dy * dy);
