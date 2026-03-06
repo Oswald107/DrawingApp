@@ -105,13 +105,13 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\Henry\Desktop\move\code\c++ projects\Draw\Externals\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\Henry\Desktop\move\code\cplusprojects\Draw\Externals\include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Users\Henry\Desktop\move\code\c++ projects\Draw\Externals\lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Users\Henry\Desktop\move\code\cplusprojects\Draw\Externals\lib</AdditionalLibraryDirectories>
       <AdditionalDependencies>glew32.lib;glfw3.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -123,12 +123,12 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\Henry\Desktop\move\code\c++ projects\Draw\Externals\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\Henry\Desktop\move\code\cplusprojects\Draw\Externals\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Users\Henry\Desktop\move\code\c++ projects\Draw\Externals\lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Users\Henry\Desktop\move\code\cplusprojects\Draw\Externals\lib</AdditionalLibraryDirectories>
       <AdditionalDependencies>glew32.lib;glfw3.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -142,10 +142,13 @@
     <ClCompile Include="Callbacks.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="CircleStroke.cpp" />
+    <ClCompile Include="Commands.cpp" />
+    <ClCompile Include="Layer.cpp" />
     <ClCompile Include="Pen.cpp" />
     <ClCompile Include="Color.cpp" />
     <ClCompile Include="Draw.cpp" />
     <ClCompile Include="ShaderClass.cpp" />
+    <ClCompile Include="Sliders.cpp" />
     <ClCompile Include="Stats.cpp" />
     <ClCompile Include="LineStroke.cpp" />
     <ClCompile Include="stb_image_write.h" />
@@ -160,9 +163,12 @@
   <ItemGroup>
     <ClInclude Include="Callbacks.h" />
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="Commands.h" />
+    <ClInclude Include="Layer.h" />
     <ClInclude Include="Pen.h" />
     <ClInclude Include="Color.h" />
     <ClInclude Include="ShaderClass.h" />
+    <ClInclude Include="Sliders.h" />
     <ClInclude Include="Stats.h" />
     <ClInclude Include="stb_image.h" />
     <ClInclude Include="Stroke.h" />

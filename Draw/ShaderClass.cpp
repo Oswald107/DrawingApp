@@ -50,6 +50,15 @@ Shader::Shader(const char* vertexFile, const char* fragmentFile)
 	// Wrap-up/Link all the shaders together into the Shader Program
 	glLinkProgram(ID);
 
+    int success;
+    char infoLog[512];
+
+    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
+    if (!success) glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
+
+    glGetProgramiv(ID, GL_LINK_STATUS, &success);
+    if (!success) glGetProgramInfoLog(ID, 512, NULL, infoLog);
+
 	// Delete the now useless Vertex and Fragment Shader objects
 	glDeleteShader(vertexShader);
 	glDeleteShader(fragmentShader);

@@ -20,3 +20,6 @@ layers - each layer is an object with its own local space, higher layers are clo
 eraser
 color picker
 mouse movement
+
+
+rectangle shaders aren't working

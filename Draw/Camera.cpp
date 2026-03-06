@@ -39,14 +39,13 @@ void Camera::update() {
 	//projection[3][0] = -1.0f;  // translate X
 	//projection[3][1] = -1.0f;  // translate Y
 
-	//projection = glm::ortho(0.0f, 800.0f, 0.0f, 800.0f);
-	std::cout << glm::to_string(projection) << std::endl;
+	//std::cout << glm::to_string(projection) << std::endl;
 	projection = glm::ortho(
-		-800 / 2.0f, 800 / 2.0f,
-		-800 / 2.0f, 800 / 2.0f,
+		-width / 2.0f / scale, width / 2.0f / scale,
+		-height / 2.0f / scale, height / 2.0f / scale,
 		-1.0f, 1.0f
 	);
-	std::cout << glm::to_string(projection) << std::endl;
+	//std::cout << glm::to_string(projection) << std::endl;
 	cameraMatrix = projection * view;
 }
 
