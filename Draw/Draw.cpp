@@ -25,6 +25,7 @@ namespace fs = std::filesystem;
 #include"Commands.h"
 #include"Sliders.h"
 #include"Layer.h"
+#include"Stroke.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 
@@ -161,7 +162,7 @@ int main()
 	glGenBuffers(1, &rectVBO);
 	glBindBuffer(GL_ARRAY_BUFFER, rectVBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(rectangleVertices), &rectangleVertices, GL_STATIC_DRAW);
-	
+
 	glGenBuffers(1, &rectEBO);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, rectEBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
@@ -187,7 +188,7 @@ int main()
 	//framebufferProgram.Recompile("frame.vert", "frame.frag");
 	framebufferProgram.Activate();
 	glUniform1i(glGetUniformLocation(framebufferProgram.ID, "screenTexture"), 0);
-	
+
 	camera.printMat();
 	// MAIN LOOP
 	while (!glfwWindowShouldClose(window))
@@ -221,7 +222,7 @@ int main()
 
 		// Bind the VAO so OpenGL knows to use it
 		glBindVertexArray(VAO1);
-		
+
 		// CAMERA INPUTS
 		camera.inputs(window);
 		layer.update();
@@ -237,15 +238,11 @@ int main()
 			glDrawArrays(GL_TRIANGLE_FAN, 0, circle.size());
 		}
 		//std::cout << layer.lines.size() << std::endl;
-		for (std::vector<Vertex> line : layer.lines) {
-			glBindBuffer(GL_ARRAY_BUFFER, VBO1);
-			glBufferData(GL_ARRAY_BUFFER, line.size() * sizeof(Vertex), line.data(), GL_DYNAMIC_DRAW);
-			glDrawArrays(GL_TRIANGLE_STRIP, 0, line.size());
+		for (const auto& line : layer.lines) {
+			line->draw(VBO1);
 		}
 
 		//std::cout << layer.lines.size() << "\n";
-
-		//glDisable(GL_BLEND);
 		glBlendFuncSeparate(GL_ZERO, GL_ONE, GL_ZERO, GL_ONE_MINUS_SRC_ALPHA);
 		for (std::vector<Vertex> e : pen.erase) {
 			glBindBuffer(GL_ARRAY_BUFFER, VBO1);
@@ -254,10 +251,9 @@ int main()
 		}
 
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		//glEnable(GL_BLEND);
-		glBindBuffer(GL_ARRAY_BUFFER, VBO1);
-		glBufferData(GL_ARRAY_BUFFER, pen.currentLine.size() * sizeof(Vertex), pen.currentLine.data(), GL_DYNAMIC_DRAW);
-		glDrawArrays(GL_TRIANGLE_STRIP, 0, pen.currentLine.size());
+		if (pen.currentLine != nullptr) {
+			pen.currentLine->draw(VBO1);
+		}
 
 
 		

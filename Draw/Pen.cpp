@@ -51,7 +51,7 @@ void testMatrix(Camera camera, float x, float y) {
 	std::cout << glm::to_string(camera.cameraMatrix * glm::vec4(x, y, 0.0f, 0.0f)) << "\n";
 }
 
-void Pen::line(GLFWwindow* window, Camera camera, Layer layer) {
+void Pen::line(GLFWwindow* window, Camera camera, Layer* layer) {
 	double curMouseX, curMouseY;
 	glfwGetCursorPos(window, &curMouseX, &curMouseY);
 	if (prevMouseX != NULL and (prevMouseX != curMouseX or prevMouseY != curMouseY)) {
@@ -60,8 +60,8 @@ void Pen::line(GLFWwindow* window, Camera camera, Layer layer) {
 		float y1 = camera.Position.y - (prevMouseY - camera.height / 2.0f) / camera.scale;
 		float y2 = camera.Position.y - (curMouseY - camera.height / 2.0f) / camera.scale;*/
 
-		glm::vec2 p1 = layer.getLayerRelativePosition(camera, prevMouseX, prevMouseY);
-		glm::vec2 p2 = layer.getLayerRelativePosition(camera, curMouseX, curMouseY);
+		glm::vec2 p1 = layer -> getLayerRelativePosition(camera, prevMouseX, prevMouseY);
+		glm::vec2 p2 = layer -> getLayerRelativePosition(camera, curMouseX, curMouseY);
 
 		float x1 = p1.x;
 		float x2 = p2.x;
@@ -75,9 +75,13 @@ void Pen::line(GLFWwindow* window, Camera camera, Layer layer) {
 		float dy = y2 - y1;
 		float len = sqrt(dx * dx + dy * dy);
 
-		layer.printPoint(x2 - dy / len * radius, y2 + dx / len * radius);
-		currentLine.push_back(Vertex { glm::vec2(x2 - dy / len * radius, y2 + dx / len * radius), glm::vec4((*color).red, (*color).green, (*color).blue, (*color).alpha) });
-		currentLine.push_back(Vertex{ glm::vec2(x2 + dy / len * radius, y2 - dx / len * radius), glm::vec4((*color).red, (*color).green, (*color).blue, (*color).alpha) });
+		layer -> printPoint(x2 - dy / len * radius, y2 + dx / len * radius);
+		if (currentLine == nullptr) {
+			//currentLine = new LineStroke();
+			currentLine = std::make_unique<LineStroke>();
+		}
+		currentLine -> vertices.push_back(Vertex { glm::vec2(x2 - dy / len * radius, y2 + dx / len * radius), glm::vec4((*color).red, (*color).green, (*color).blue, (*color).alpha) });
+		currentLine -> vertices.push_back(Vertex{ glm::vec2(x2 + dy / len * radius, y2 - dx / len * radius), glm::vec4((*color).red, (*color).green, (*color).blue, (*color).alpha) });
 	}
 
 	prevMouseX = curMouseX;
@@ -91,7 +95,7 @@ void Pen::Inputs(GLFWwindow* window, Camera camera, Layer* layer) {
 		// Hides mouse cursor
 		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 		//circles.push_back(pen.createCircle(window, camera));
-		line(window, camera, *layer);
+		line(window, camera, layer);
 	}
 	else if (glfwGetKey(window, GLFW_KEY_N) == GLFW_PRESS) {
 		held = true;
@@ -100,8 +104,8 @@ void Pen::Inputs(GLFWwindow* window, Camera camera, Layer* layer) {
 	else {
 		if (held) {
 			held = false;
-			(*layer).lines.push_back(currentLine);
-			currentLine = std::vector<Vertex>{};
+			layer -> lines.push_back(std::move(currentLine));
+			currentLine = nullptr;
 		}
 		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 		prevMouseX = NULL;
@@ -109,16 +113,16 @@ void Pen::Inputs(GLFWwindow* window, Camera camera, Layer* layer) {
 	}
 
 	// UNDO
-	if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS and (*layer).lines.size() > 0)
-	{
-		redo.push_back((*layer).lines.back());
-		(*layer).lines.pop_back();
-	}
+	//if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS and (*layer).lines.size() > 0)
+	//{
+	//	redo.push_back((*layer).lines.back());
+	//	(*layer).lines.pop_back();
+	//}
 
-	// REDO
-	if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS and redo.size() > 0)
-	{
-		(*layer).lines.push_back(redo.back());
-		redo.pop_back();
-	}
+	//// REDO
+	//if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS and redo.size() > 0)
+	//{
+	//	(*layer).lines.push_back(redo.back());
+	//	redo.pop_back();
+	//}
 }

@@ -12,6 +12,7 @@
 
 #include"Camera.h"
 #include"Vertex.h"
+#include"Stroke.h"
 
 class Layer
 {
@@ -21,7 +22,8 @@ public:
 	int width;
 	int height;
 
-	std::vector<std::vector<Vertex>> lines;
+	std::vector<std::unique_ptr<Stroke>> lines;
+	//std::vector<Stroke*> lines;
 
 	glm::mat4 layerMatrix = glm::mat4(1.0f);
 	glm::vec3 Orientation = glm::vec3(0.0f, 0.0f, -1.0f);

@@ -15,8 +15,8 @@ public:
 	std::vector<Vertex> vertices;
 
 	Stroke() = default;
-	virtual ~Stroke() = default;
-	virtual void draw(GLuint VBO);
+	virtual ~Stroke() = default; 
+	virtual void draw(GLuint VBO) = 0;
 };
 
 

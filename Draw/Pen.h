@@ -9,6 +9,8 @@
 #include"Color.h"
 #include"Camera.h"
 #include"Layer.h"
+#include"Stroke.h"
+#include"LineStroke.h"
 
 class Pen {
 
@@ -18,7 +20,9 @@ public:
 	float radius = 5.0f;
 	Color* color;
 	bool held = false;
-	std::vector<Vertex> currentLine = std::vector<Vertex>{};
+	std::unique_ptr<Stroke> currentLine;
+	//Stroke* currentLine;
+	
 
 	std::vector<std::vector<Vertex>> circles;
 	std::vector<std::vector<Vertex>> redo;
@@ -27,7 +31,7 @@ public:
 	Pen(Color* c);
 	//glm::vec2 screenPositionToWorldPosition(double x, double y, glm::vec3 cameraPosition);
 	std::vector<Vertex> createCircle(GLFWwindow* window, Camera camera);
-	void line(GLFWwindow* window, Camera camera, Layer layer);
+	void line(GLFWwindow* window, Camera camera, Layer* layer);
 	void Inputs(GLFWwindow* window, Camera camera, Layer* layer);
 };
 
