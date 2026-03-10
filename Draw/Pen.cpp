@@ -37,7 +37,7 @@ std::vector<Vertex> Pen::createCircle(GLFWwindow* window, Camera camera) {
 				float theta = 2.0f * 3.1415926f * float(i) / float(16);
 				float vx = x + radius * cosf(theta);
 				float vy = y + radius * sinf(theta);
-				v.push_back(Vertex{ glm::vec2(vx, vy), glm::vec4((*color).red, (*color).green, (*color).blue, (*color).alpha) });
+				v.push_back(Vertex{ glm::vec2(vx, vy), glm::vec4(1.0f, 1.0f, 1.0f, (*color).alpha) });
 			}
 		}
 	}

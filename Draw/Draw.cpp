@@ -48,6 +48,13 @@ float rectangleVertices[] =
 	 float(drawingSpaceWidth)/2.0f,  float(drawingSpaceHeight)/2.0f,  1.0f, 1.0f,	1.0f, 1.0f, 1.0f
 };
 
+Camera camera(width, height, glm::vec3(0.0f, 0.0f, 1.0f));
+
+void scrollCallback(GLFWwindow* window, double xoffset, double yoffset)
+{
+	camera.processMouseScroll((float)yoffset);
+}
+
 int main()
 {
 	// BASIC STUFF
@@ -87,7 +94,7 @@ int main()
 	glViewport(0, 0, width, height);
 
 	glfwSetCursorPosCallback(window, cursor_position_callback);
-	
+	glfwSetScrollCallback(window, scrollCallback);
 
 	// VAO, VBO SETUP
 	GLuint VAO1, VBO1;
@@ -114,7 +121,6 @@ int main()
 	Stats stats;
 	Sliders sliders(window);
 	Color color;
-	Camera camera(width, height, glm::vec3(0.0f, 0.0f, 1.0f));
 	float scale = 1.0f;
 	Pen pen(&color);
 	Layer layer(drawingSpaceWidth, drawingSpaceHeight, glm::vec2(0.0f, 0.0f));
@@ -128,7 +134,7 @@ int main()
 	unsigned int colorTex;
 	glGenTextures(1, &colorTex);
 	glBindTexture(GL_TEXTURE_2D, colorTex);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, drawingSpaceWidth, drawingSpaceHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, drawingSpaceWidth, drawingSpaceHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); 
@@ -217,7 +223,7 @@ int main()
 		glBindVertexArray(VAO1);
 		
 		// CAMERA INPUTS
-		camera.Inputs(window);
+		camera.inputs(window);
 		layer.update();
 		// Updates and exports the camera matrix to the Vertex Shader
 		layer.Matrix(shaderProgram, "layerMatrix");
@@ -240,12 +246,14 @@ int main()
 		//std::cout << layer.lines.size() << "\n";
 
 		//glDisable(GL_BLEND);
+		glBlendFuncSeparate(GL_ZERO, GL_ONE, GL_ZERO, GL_ONE_MINUS_SRC_ALPHA);
 		for (std::vector<Vertex> e : pen.erase) {
 			glBindBuffer(GL_ARRAY_BUFFER, VBO1);
 			glBufferData(GL_ARRAY_BUFFER, e.size() * sizeof(Vertex), e.data(), GL_DYNAMIC_DRAW);
 			glDrawArrays(GL_TRIANGLE_FAN, 0, e.size());
 		}
 
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		//glEnable(GL_BLEND);
 		glBindBuffer(GL_ARRAY_BUFFER, VBO1);
 		glBufferData(GL_ARRAY_BUFFER, pen.currentLine.size() * sizeof(Vertex), pen.currentLine.data(), GL_DYNAMIC_DRAW);

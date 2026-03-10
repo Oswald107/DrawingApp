@@ -52,7 +52,7 @@ void Sliders::addSliders(Color* color, Pen* pen, Camera* camera) {
 	if (ImGui::SliderFloat("Opacity", &(*color).alpha, 0.0f, 1.0f, "Value = %.1f")) {
 
 	}
-	if (ImGui::SliderFloat("Size", &(*pen).radius, 0.0f, 10000.0f, "Value = %.2f")) {
+	if (ImGui::SliderFloat("Size", &(*pen).radius, 0.0f, 100.0f, "Value = %.2f")) {
 
 	}
 	if (ImGui::SliderFloat("Hue", &(*color).hue, 0.0f, 100.0f, "Hue = %.1f")) {

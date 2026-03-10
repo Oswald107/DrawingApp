@@ -30,7 +30,7 @@ public:
 
 	// Adjust the speed of the camera and it's sensitivity when looking around
 	float speed = 10.0f;
-	float sensitivity = 100.0f;
+	float sensitivity = 10000.0f;
 
 	// Camera constructor to set up initial values
 	Camera(int width, int height, glm::vec2 position);
@@ -38,10 +38,11 @@ public:
 	// Exports the camera matrix to a shader
 	void Matrix(Shader& shader, const char* uniform);
 	// Handles camera inputs
-	void Inputs(GLFWwindow* window);
+	void inputs(GLFWwindow* window);
 
 	void printMat();
 	void updateDimensions(int width, int height, float scale);
 	void update();
+	void processMouseScroll(float yoffset);
 };
 #endif

@@ -7,7 +7,11 @@ alternative pen, draws 2 triangles between points instead of filling with circle
 undo
 redo
 save
-
+fbo initial setup done
+mouse movement
+- scroll to zoom
+- right click to pan
+basic eraser done (pen with background color)
 
 better save
 open
@@ -16,10 +20,8 @@ make cursor circle
 make circle not produce extras when held?
 
 layers - each layer is an object with its own local space, higher layers are closer to the camera
+- move layer
+- add layer
 
-eraser
+complex eraser (if we want to have multiple layers we need something that can show the layer beneath when erased)
 color picker
-mouse movement
-
-
-rectangle shaders aren't working
