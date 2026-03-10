@@ -165,6 +165,7 @@
     <ClInclude Include="Callbacks.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Commands.h" />
+    <ClInclude Include="EraseStroke.h" />
     <ClInclude Include="Layer.h" />
     <ClInclude Include="LineStroke.h" />
     <ClInclude Include="Pen.h" />

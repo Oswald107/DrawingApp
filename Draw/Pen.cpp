@@ -1,5 +1,6 @@
 #include"Pen.h"
 #include "glm/gtx/string_cast.hpp"
+#include"EraseStroke.h"
 
 Pen::Pen(Color* c) {
 	prevMouseX = NULL;
@@ -99,12 +100,21 @@ void Pen::Inputs(GLFWwindow* window, Camera camera, Layer* layer) {
 	}
 	else if (glfwGetKey(window, GLFW_KEY_N) == GLFW_PRESS) {
 		held = true;
-		erase.push_back(createCircle(window, camera));
+		std::unique_ptr<Stroke> s = std::make_unique<EraseStroke>();
+		std::vector<Vertex> v = createCircle(window, camera);
+		if (v.size() > 0) {
+			s->vertices = v;
+			//erase.push_back(createCircle(window, camera));
+			layer -> lines.push_back(std::move(s));
+		}
+		
 	}
 	else {
 		if (held) {
 			held = false;
-			layer -> lines.push_back(std::move(currentLine));
+			if (currentLine != nullptr) {
+				layer -> lines.push_back(std::move(currentLine));
+			}
 			currentLine = nullptr;
 		}
 		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
