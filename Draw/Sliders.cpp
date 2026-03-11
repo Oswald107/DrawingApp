@@ -40,32 +40,32 @@ void Sliders::addSliders(Color* color, Pen* pen, Camera* camera) {
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();
 	ImGui::Begin("Hello");
-	if (ImGui::SliderFloat("R", &(*color).red, 0.0f, 1.0f, "Value = %.2f")) {
+	if (ImGui::SliderFloat("R", &color->red, 0.0f, 1.0f, "Value = %.2f")) {
 
 	}
-	if (ImGui::SliderFloat("G", &(*color).green, 0.0f, 1.0f, "Value = %.2f")) {
+	if (ImGui::SliderFloat("G", &color->green, 0.0f, 1.0f, "Value = %.2f")) {
 
 	}
-	if (ImGui::SliderFloat("B", &(*color).blue, 0.0f, 1.0f, "Value = %.2f")) {
+	if (ImGui::SliderFloat("B", &color->blue, 0.0f, 1.0f, "Value = %.2f")) {
 
 	}
-	if (ImGui::SliderFloat("Opacity", &(*color).alpha, 0.0f, 1.0f, "Value = %.1f")) {
+	if (ImGui::SliderFloat("Opacity", &color->alpha, 0.0f, 1.0f, "Value = %.1f")) {
 
 	}
-	if (ImGui::SliderFloat("Size", &(*pen).radius, 0.0f, 100.0f, "Value = %.2f")) {
+	if (ImGui::SliderFloat("Size", &pen->radius, 0.0f, 100.0f, "Value = %.2f")) {
 
 	}
-	if (ImGui::SliderFloat("Hue", &(*color).hue, 0.0f, 100.0f, "Hue = %.1f")) {
-		(*color).recalculateHue();
+	if (ImGui::SliderFloat("Hue", &color->hue, 0.0f, 100.0f, "Hue = %.1f")) {
+		color->recalculateHue();
 	}
-	if (ImGui::SliderFloat("Value", &(*color).value, 0.0f, 100.0f, "Value = %.1f")) {
-		(*color).recalculateValue();
+	if (ImGui::SliderFloat("Value", &color->value, 0.0f, 100.0f, "Value = %.1f")) {
+		color->recalculateValue();
 	}
-	if (ImGui::SliderFloat("Saturation", &(*color).saturation, 0.0f, 100.0f, "Saturationn = %.1f")) {
-		(*color).recalculateSaturation();
+	if (ImGui::SliderFloat("Saturation", &color->saturation, 0.0f, 100.0f, "Saturationn = %.1f")) {
+		color->recalculateSaturation();
 	}
-	if (ImGui::SliderFloat("Scale", &(*camera).scale, 1.0f, 10.0f, "Scale = %.1f")) {
-		(*camera).update();
+	if (ImGui::SliderFloat("Scale", &camera->scale, 1.0f, 10.0f, "Scale = %.1f")) {
+		camera->update();
 	}
 	ImGui::Text("ImGui is working!");
 	ImGui::End();

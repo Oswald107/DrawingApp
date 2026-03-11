@@ -35,7 +35,7 @@ public:
 	glm::vec2 getLayerRelativePosition(Camera camera, float curX, float curY);
 
 	// Exports the camera matrix to a shader
-	void Matrix(Shader& shader, const char* uniform);
+	void matrix(Shader& shader, const char* uniform);
 	void update();
 	void printPoint(float x, float y);
 };

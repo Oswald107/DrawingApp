@@ -31,13 +31,6 @@ void Camera::update() {
 
 	// Makes camera look in the right direction from the right position
 	view = glm::lookAt(Position, Position + Orientation, Up);
-	// Sets transformation between screen with bounds 2x2 (in the range -1 to 1) and the drawing space (I set it to follow the resolution so like 1920 X 1080 at fullscreen from range -960 to 960 ...) 
-	//projection[0][0] = scale * 2.0f / width;
-	//projection[1][1] = scale * 2.0f / height;
-	//projection[2][2] = -1.0f;
-	//projection[3][3] = 1.0f;
-	//projection[3][0] = -1.0f;  // translate X
-	//projection[3][1] = -1.0f;  // translate Y
 
 	//std::cout << glm::to_string(projection) << std::endl;
 	projection = glm::ortho(
@@ -49,7 +42,7 @@ void Camera::update() {
 	cameraMatrix = projection * view;
 }
 
-void Camera::Matrix(Shader& shader, const char* uniform)
+void Camera::matrix(Shader& shader, const char* uniform)
 {
 	// Exports the camera matrix to the Vertex Shader
 	glUniformMatrix4fv(glGetUniformLocation(shader.ID, uniform), 1, GL_FALSE, glm::value_ptr(cameraMatrix));
@@ -101,7 +94,7 @@ void Camera::inputs(GLFWwindow* window)
 	//std::cout << Position.x << " " << Position.y << "\n";
 	
 	// Handles mouse inputs
-	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
+	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_PRESS)
 	{
 		shouldUpdateCamera = true;
 		// Hides mouse cursor

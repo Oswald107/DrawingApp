@@ -36,7 +36,7 @@ public:
 	Camera(int width, int height, glm::vec2 position);
 
 	// Exports the camera matrix to a shader
-	void Matrix(Shader& shader, const char* uniform);
+	void matrix(Shader& shader, const char* uniform);
 	// Handles camera inputs
 	void inputs(GLFWwindow* window);
 

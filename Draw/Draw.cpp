@@ -116,7 +116,6 @@ int main()
 
 	// ALPHA BLENDING
 	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	// ETC
 	Stats stats;
@@ -124,7 +123,19 @@ int main()
 	Color color;
 	float scale = 1.0f;
 	Pen pen(&color);
-	Layer layer(drawingSpaceWidth, drawingSpaceHeight, glm::vec2(0.0f, 0.0f));
+
+	/*std::vector<std::unique_ptr<Layer>> layers = {
+		std::make_unique<Layer>(drawingSpaceWidth, drawingSpaceHeight, glm::vec2(0.0f, 0.0f)),
+		std::make_unique<Layer>(drawingSpaceWidth, drawingSpaceHeight, glm::vec2(0.0f, 0.0f)),
+	};*/
+	Layer layers[] = {
+		Layer(drawingSpaceWidth, drawingSpaceHeight, glm::vec2(0.0f, 0.0f)),
+		Layer(drawingSpaceWidth, drawingSpaceHeight, glm::vec2(0.0f, 0.0f)),
+	};
+	/*Layer layer(drawingSpaceWidth, drawingSpaceHeight, glm::vec2(0.0f, 0.0f));
+	Layer layer2(drawingSpaceWidth, drawingSpaceHeight, glm::vec2(0.0f, 0.0f));*/
+	int currentLayer = 0;
+
 	
 
 	// FBO
@@ -193,7 +204,17 @@ int main()
 	// MAIN LOOP
 	while (!glfwWindowShouldClose(window))
 	{
-		// bind the layer FBO
+		// Swap layers
+		if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
+		{
+			currentLayer = 0;
+		}
+		else if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
+		{
+			currentLayer = 1;
+		}
+
+		// Bind the layer FBO
 		glBindFramebuffer(GL_FRAMEBUFFER, FBO);
 		glViewport(0, 0, drawingSpaceWidth, drawingSpaceHeight);
 
@@ -201,7 +222,6 @@ int main()
 		glClearColor(0.07f, 0.13f, 0.17f, 1.0f);
 		// Clean the back buffer and assign the new color to it
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		//glEnable(GL_DEPTH_TEST);
 		// Use our default drawing shader
 		shaderProgram.Activate();
 
@@ -214,69 +234,48 @@ int main()
 			camera.height = height;
 			camera.update();
 		}
-		//std::cout << width << " " << height << std::endl;
+		
 		// METRICS
 		stats.showStats(window);
 		// PEN INPUTS
-		pen.Inputs(window, camera, &layer);
+		pen.inputs(window, camera, &layers[currentLayer]);
 
 		// Bind the VAO so OpenGL knows to use it
 		glBindVertexArray(VAO1);
 
-		// CAMERA INPUTS
+		// CAMERA INPUTS AND DRAWING
 		camera.inputs(window);
-		layer.update();
-		// Updates and exports the camera matrix to the Vertex Shader
-		layer.Matrix(shaderProgram, "layerMatrix");
+		for (int i = 0; i < sizeof(layers)/sizeof(layers[0]); ++i) {
+			layers[i].update();
+			layers[i].matrix(shaderProgram, "layerMatrix");
+			for (const auto& line : layers[i].lines) {
+				line->draw(VBO1);
+			}
+			if (i == currentLayer && pen.currentLine != nullptr) {
+				pen.currentLine->draw(VBO1);
+			}
+		}
 
-
-		//glEnable(GL_BLEND);
 		// DRAW
-		for (std::vector<Vertex> circle : pen.circles) {
+		/*for (std::vector<Vertex> circle : pen.circles) {
 			glBindBuffer(GL_ARRAY_BUFFER, VBO1);
 			glBufferData(GL_ARRAY_BUFFER, circle.size() * sizeof(Vertex), circle.data(), GL_DYNAMIC_DRAW);
 			glDrawArrays(GL_TRIANGLE_FAN, 0, circle.size());
-		}
-		//std::cout << layer.lines.size() << std::endl;
-		for (const auto& line : layer.lines) {
-			line->draw(VBO1);
-		}
-
-		//std::cout << layer.lines.size() << "\n";
-		glBlendFuncSeparate(GL_ZERO, GL_ONE, GL_ZERO, GL_ONE_MINUS_SRC_ALPHA);
-		for (std::vector<Vertex> e : pen.erase) {
-			glBindBuffer(GL_ARRAY_BUFFER, VBO1);
-			glBufferData(GL_ARRAY_BUFFER, e.size() * sizeof(Vertex), e.data(), GL_DYNAMIC_DRAW);
-			glDrawArrays(GL_TRIANGLE_FAN, 0, e.size());
-		}
-
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		if (pen.currentLine != nullptr) {
-			pen.currentLine->draw(VBO1);
-		}
-
-
+		}*/
 		
+
 		// SAVE FUNCTION
 		save(window);
-
-
-		// If erasing:
-		//glDisable(GL_BLEND);
-		/*setShaderColor(bgR, bgG, bgB, 1.0f);
-		drawEraseCircle();*/
-
 
 		// Bind the default framebuffer
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glViewport(0, 0, width, height);
 
-		//glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// Draw the framebuffer rectangle
 		framebufferProgram.Activate();
-		camera.Matrix(framebufferProgram, "cameraMatrix");
+		camera.matrix(framebufferProgram, "cameraMatrix");
 		glBindVertexArray(rectVAO);
 		glDisable(GL_DEPTH_TEST); // prevents framebuffer rectangle from being discarded
 		glBindTexture(GL_TEXTURE_2D, colorTex);

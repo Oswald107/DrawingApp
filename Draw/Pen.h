@@ -22,17 +22,23 @@ public:
 	bool held = false;
 	std::unique_ptr<Stroke> currentLine;
 	//Stroke* currentLine;
-	
+
+	double minDelay = .02;
+	double maxDelay = .3;
+	double roc = .07;
+	double undoDelay = maxDelay;
+	double undoNextTrigger = glfwGetTime();
+	double redoDelay = maxDelay;
+	double redoNextTrigger = glfwGetTime();
 
 	std::vector<std::vector<Vertex>> circles;
-	std::vector<std::vector<Vertex>> redo;
-	std::vector<std::vector<Vertex>> erase;
+	std::vector<std::unique_ptr<Stroke>> redo;
 
 	Pen(Color* c);
 	//glm::vec2 screenPositionToWorldPosition(double x, double y, glm::vec3 cameraPosition);
 	std::vector<Vertex> createCircle(GLFWwindow* window, Camera camera);
 	void line(GLFWwindow* window, Camera camera, Layer* layer);
-	void Inputs(GLFWwindow* window, Camera camera, Layer* layer);
+	void inputs(GLFWwindow* window, Camera camera, Layer* layer);
 };
 
 

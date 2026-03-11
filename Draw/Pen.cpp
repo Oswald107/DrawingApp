@@ -2,6 +2,7 @@
 #include "glm/gtx/string_cast.hpp"
 #include"EraseStroke.h"
 
+
 Pen::Pen(Color* c) {
 	prevMouseX = NULL;
 	prevMouseY = NULL;
@@ -56,10 +57,6 @@ void Pen::line(GLFWwindow* window, Camera camera, Layer* layer) {
 	double curMouseX, curMouseY;
 	glfwGetCursorPos(window, &curMouseX, &curMouseY);
 	if (prevMouseX != NULL and (prevMouseX != curMouseX or prevMouseY != curMouseY)) {
-		/*float x1 = camera.Position.x + (prevMouseX - camera.width / 2.0f) / camera.scale;
-		float x2 = camera.Position.x + (curMouseX - camera.width / 2.0f) / camera.scale;
-		float y1 = camera.Position.y - (prevMouseY - camera.height / 2.0f) / camera.scale;
-		float y2 = camera.Position.y - (curMouseY - camera.height / 2.0f) / camera.scale;*/
 
 		glm::vec2 p1 = layer -> getLayerRelativePosition(camera, prevMouseX, prevMouseY);
 		glm::vec2 p2 = layer -> getLayerRelativePosition(camera, curMouseX, curMouseY);
@@ -78,7 +75,6 @@ void Pen::line(GLFWwindow* window, Camera camera, Layer* layer) {
 
 		layer -> printPoint(x2 - dy / len * radius, y2 + dx / len * radius);
 		if (currentLine == nullptr) {
-			//currentLine = new LineStroke();
 			currentLine = std::make_unique<LineStroke>();
 		}
 		currentLine -> vertices.push_back(Vertex { glm::vec2(x2 - dy / len * radius, y2 + dx / len * radius), glm::vec4((*color).red, (*color).green, (*color).blue, (*color).alpha) });
@@ -89,25 +85,21 @@ void Pen::line(GLFWwindow* window, Camera camera, Layer* layer) {
 	prevMouseY = curMouseY;
 }
 
-void Pen::Inputs(GLFWwindow* window, Camera camera, Layer* layer) {
+void Pen::inputs(GLFWwindow* window, Camera camera, Layer* layer) {
 	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
 	{
 		held = true;
-		// Hides mouse cursor
 		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
-		//circles.push_back(pen.createCircle(window, camera));
 		line(window, camera, layer);
 	}
-	else if (glfwGetKey(window, GLFW_KEY_N) == GLFW_PRESS) {
+	else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) {
 		held = true;
 		std::unique_ptr<Stroke> s = std::make_unique<EraseStroke>();
 		std::vector<Vertex> v = createCircle(window, camera);
 		if (v.size() > 0) {
 			s->vertices = v;
-			//erase.push_back(createCircle(window, camera));
 			layer -> lines.push_back(std::move(s));
 		}
-		
 	}
 	else {
 		if (held) {
@@ -121,18 +113,36 @@ void Pen::Inputs(GLFWwindow* window, Camera camera, Layer* layer) {
 		prevMouseX = NULL;
 		prevMouseY = NULL;
 	}
-
+	
 	// UNDO
-	//if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS and (*layer).lines.size() > 0)
-	//{
-	//	redo.push_back((*layer).lines.back());
-	//	(*layer).lines.pop_back();
-	//}
+	if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS and (*layer).lines.size() > 0)
+	{
+		double now = glfwGetTime();
+		if (now >= undoNextTrigger) {
+			redo.push_back(std::move(layer -> lines.back()));
+			layer -> lines.pop_back();
+			undoNextTrigger = now + undoDelay;
+			undoDelay = std::max(minDelay, undoDelay - roc);
+		}
+	}
+	else {
+		undoDelay = maxDelay;
+		undoNextTrigger = glfwGetTime();
+	}
 
-	//// REDO
-	//if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS and redo.size() > 0)
-	//{
-	//	(*layer).lines.push_back(redo.back());
-	//	redo.pop_back();
-	//}
+	// REDO
+	if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS and redo.size() > 0)
+	{
+		double now = glfwGetTime();
+		if (now >= redoNextTrigger) {
+			layer->lines.push_back(std::move(redo.back()));
+			redo.pop_back();
+			redoNextTrigger = now + redoDelay;
+			redoDelay = std::max(minDelay, redoDelay - roc);
+		}
+	}
+	else {
+		redoDelay = maxDelay;
+		redoNextTrigger = glfwGetTime();
+	}
 }

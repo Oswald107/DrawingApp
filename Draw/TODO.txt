@@ -12,6 +12,10 @@ mouse movement
 - scroll to zoom
 - right click to pan
 basic eraser done (pen with background color)
+complex eraser (if we want to have multiple layers we need something that can show the layer beneath when erased)
+- pen lines and erase lines now inherit from the Stroke class, all strokes are kept track of under the layer lines vector and drawn in order
+press and hold undo/redo with decreasing delay
+layer poc, 2 layers that can be swapped with 1 and 2
 
 better save
 open
@@ -23,5 +27,5 @@ layers - each layer is an object with its own local space, higher layers are clo
 - move layer
 - add layer
 
-complex eraser (if we want to have multiple layers we need something that can show the layer beneath when erased)
 color picker
+moving sliders shouldn't draw

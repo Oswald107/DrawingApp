@@ -33,7 +33,7 @@ void Layer::update() {
 	layerMatrix = projection * view;
 }
 
-void Layer::Matrix(Shader& shader, const char* uniform)
+void Layer::matrix(Shader& shader, const char* uniform)
 {
 	// Exports the camera matrix to the Vertex Shader
 	glUniformMatrix4fv(glGetUniformLocation(shader.ID, uniform), 1, GL_FALSE, glm::value_ptr(layerMatrix));
