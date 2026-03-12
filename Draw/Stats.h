@@ -12,5 +12,6 @@ public:
 	Stats();
 	
 	void showStats(GLFWwindow* window);
+	void showLayerInfo(GLFWwindow* window, int currentLayer, int totalLayers, bool visible);
 };
 #endif

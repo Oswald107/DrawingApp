@@ -21,7 +21,6 @@ public:
 	Color* color;
 	bool held = false;
 	std::unique_ptr<Stroke> currentLine;
-	//Stroke* currentLine;
 
 	double minDelay = .02;
 	double maxDelay = .3;

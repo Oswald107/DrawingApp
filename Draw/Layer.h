@@ -21,6 +21,7 @@ public:
 	glm::vec3 Position;
 	int width;
 	int height;
+	bool visibility = true;
 
 	std::vector<std::unique_ptr<Stroke>> lines;
 	//std::vector<Stroke*> lines;

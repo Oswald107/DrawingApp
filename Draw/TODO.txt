@@ -1,3 +1,4 @@
+DONE
 connected line
 color pick
 size
@@ -6,7 +7,7 @@ zoom
 alternative pen, draws 2 triangles between points instead of filling with circles
 undo
 redo
-save
+save (simple save, I press a button and it saves the image to output.png)
 fbo initial setup done
 mouse movement
 - scroll to zoom
@@ -16,16 +17,22 @@ complex eraser (if we want to have multiple layers we need something that can sh
 - pen lines and erase lines now inherit from the Stroke class, all strokes are kept track of under the layer lines vector and drawn in order
 press and hold undo/redo with decreasing delay
 layer poc, 2 layers that can be swapped with 1 and 2
-
-better save
-open
-rgb adjust hsv
-make cursor circle
-make circle not produce extras when held?
-
-layers - each layer is an object with its own local space, higher layers are closer to the camera
-- move layer
+layers - each layer is an object with its own local space, higher layers are drawn over lower ones
 - add layer
+- visualize layer info
+drawing background differnt from world background
 
-color picker
+TODO
 moving sliders shouldn't draw
+make circle not produce extras when held? (find a way to lock the alpha of the current stroke so overlapping itself doesn't matter)
+make cursor circle
+
+better save (pull up file explorer at least)
+open (create a layer and place texture in the center)
+rgb adjust hsv
+
+layers - each layer is an object with its own local space, higher layers are drawn over lower ones
+- move layer position in the world
+- move layer heirarchy (probably better when I have a better way to visualize layers)
+- better layer visualization
+color picker

@@ -49,6 +49,14 @@ float rectangleVertices[] =
 	 float(drawingSpaceWidth)/2.0f,  float(drawingSpaceHeight)/2.0f,  1.0f, 1.0f,	1.0f, 1.0f, 1.0f
 };
 
+glm::vec4 drawingSpaceBackgroundColor(0.5f, 0.5f, 0.5f, 1.0f);
+std::vector<Vertex> drawingSpaceVertices = {
+	Vertex{glm::vec2(-float(drawingSpaceWidth) / 2.0f, -float(drawingSpaceHeight) / 2.0f), drawingSpaceBackgroundColor},
+	Vertex{glm::vec2(float(drawingSpaceWidth) / 2.0f, -float(drawingSpaceHeight) / 2.0f), drawingSpaceBackgroundColor},
+	Vertex{glm::vec2(-float(drawingSpaceWidth) / 2.0f, float(drawingSpaceHeight) / 2.0f), drawingSpaceBackgroundColor},
+	Vertex{glm::vec2(float(drawingSpaceWidth) / 2.0f, float(drawingSpaceHeight) / 2.0f), drawingSpaceBackgroundColor},
+};
+
 Camera camera(width, height, glm::vec3(0.0f, 0.0f, 1.0f));
 
 void scrollCallback(GLFWwindow* window, double xoffset, double yoffset)
@@ -124,17 +132,15 @@ int main()
 	float scale = 1.0f;
 	Pen pen(&color);
 
-	/*std::vector<std::unique_ptr<Layer>> layers = {
-		std::make_unique<Layer>(drawingSpaceWidth, drawingSpaceHeight, glm::vec2(0.0f, 0.0f)),
-		std::make_unique<Layer>(drawingSpaceWidth, drawingSpaceHeight, glm::vec2(0.0f, 0.0f)),
-	};*/
-	Layer layers[] = {
-		Layer(drawingSpaceWidth, drawingSpaceHeight, glm::vec2(0.0f, 0.0f)),
-		Layer(drawingSpaceWidth, drawingSpaceHeight, glm::vec2(0.0f, 0.0f)),
+	// LAYER SETUP
+	std::vector<Layer*> layers = {
+		new Layer(drawingSpaceWidth, drawingSpaceHeight, glm::vec2(0.0f, 0.0f)),
+		new Layer(drawingSpaceWidth, drawingSpaceHeight, glm::vec2(0.0f, 0.0f)),
 	};
-	/*Layer layer(drawingSpaceWidth, drawingSpaceHeight, glm::vec2(0.0f, 0.0f));
-	Layer layer2(drawingSpaceWidth, drawingSpaceHeight, glm::vec2(0.0f, 0.0f));*/
-	int currentLayer = 0;
+	int currentLayer = 1;
+	std::unique_ptr<LineStroke> backgroundStroke = std::make_unique<LineStroke>();
+	backgroundStroke -> vertices = drawingSpaceVertices;
+	layers[0]->lines.push_back(std::move(backgroundStroke));
 
 	
 
@@ -204,14 +210,23 @@ int main()
 	// MAIN LOOP
 	while (!glfwWindowShouldClose(window))
 	{
-		// Swap layers
-		if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
+		// Layer commands
+		if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS and currentLayer > 0)
 		{
-			currentLayer = 0;
+			--currentLayer;
 		}
-		else if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
+		if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS and currentLayer < layers.size()-1)
 		{
-			currentLayer = 1;
+			++currentLayer;
+		}
+		if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
+		{
+			layers.push_back(new Layer(drawingSpaceWidth, drawingSpaceHeight, glm::vec2(0.0f, 0.0f)));
+			currentLayer = layers.size()-1;
+		}
+		if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS)
+		{
+			layers[currentLayer] -> visibility = !layers[currentLayer] -> visibility;
 		}
 
 		// Bind the layer FBO
@@ -236,19 +251,23 @@ int main()
 		}
 		
 		// METRICS
-		stats.showStats(window);
+		//stats.showStats(window);
+		stats.showLayerInfo(window, currentLayer, layers.size(), layers[currentLayer]->visibility);
 		// PEN INPUTS
-		pen.inputs(window, camera, &layers[currentLayer]);
+		pen.inputs(window, camera, layers[currentLayer]);
 
 		// Bind the VAO so OpenGL knows to use it
 		glBindVertexArray(VAO1);
 
 		// CAMERA INPUTS AND DRAWING
 		camera.inputs(window);
-		for (int i = 0; i < sizeof(layers)/sizeof(layers[0]); ++i) {
-			layers[i].update();
-			layers[i].matrix(shaderProgram, "layerMatrix");
-			for (const auto& line : layers[i].lines) {
+		for (int i = 0; i < layers.size(); ++i) {
+			layers[i]->update();
+			layers[i]->matrix(shaderProgram, "layerMatrix");
+			if (!layers[i]->visibility) {
+				continue;
+			}
+			for (const auto& line : layers[i]->lines) {
 				line->draw(VBO1);
 			}
 			if (i == currentLayer && pen.currentLine != nullptr) {

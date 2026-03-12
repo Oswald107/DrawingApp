@@ -22,3 +22,19 @@ void Stats::showStats(GLFWwindow* window) {
 		prevTime = crntTime;
 	}
 }
+
+
+void Stats::showLayerInfo(GLFWwindow* window, int currentLayer, int totalLayers, bool visible) 
+{
+	double crntTime = glfwGetTime();
+	double timeDiff = crntTime - prevTime;
+	if (timeDiff >= 1.0 / 30.0)
+	{
+		std::string cl = std::to_string(currentLayer);
+		std::string tl = std::to_string(totalLayers);
+		std::string v = std::to_string(visible);
+		std::string metricsHeader = "OpenGL App - Layer: " + cl + " Total Layer: " + tl + " Visible: " + v;
+		glfwSetWindowTitle(window, metricsHeader.c_str());
+		prevTime = crntTime;
+	}
+}
